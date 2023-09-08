@@ -63,6 +63,41 @@ var Ship = /** @class */ (function () {
         }
         return count;
     };
+    Ship.prototype.removeWaldos = function () {
+        for (var i = 0; i < this.crew.length; i++) {
+            if (this.crew[i].getName() == "Waldo") {
+                //Remove Waldo!
+                this.crew.splice(i, 1);
+            }
+        }
+    };
+    Ship.prototype.removeDeepWaldos = function () {
+        //First call removeWaldos to get rid of the Waldos in the current ship
+        this.removeWaldos();
+        //Iterate over the daughter ships, and get rid of those Waldos
+        for (var j = 0; j < this.daughters.length; j++) {
+            for (var k = 0; k < this.daughters[j].crew.length; k++) {
+                this.daughters[j].removeWaldos();
+            }
+        }
+    };
+    Ship.prototype.fleetHasDuplicates = function () {
+        var arrayID;
+        arrayID = [];
+        //Check first ship of the fleet, store its ID into arrayID
+        arrayID.push(this.getSerialNumber());
+        //Iterate over the daughter ships, store new IDs into arrayID, return true once an ID is already in the array
+        for (var j = 0; j < this.daughters.length; j++) {
+            if (arrayID.indexOf(this.daughters[j].getSerialNumber()) > 0) {
+                return true;
+            }
+            else {
+                arrayID.push(this.daughters[j].getSerialNumber());
+            }
+        }
+        //If it exits the for loop, there were no duplicates!
+        return false;
+    };
     Ship.currentID = 1;
     return Ship;
 }());
@@ -80,9 +115,13 @@ var ship2 = new Ship([maude, harold, Waldo1, Waldo2], []);
 var ship3 = new Ship([maude, harold], []);
 var ship4 = new Ship([harold, Waldo1], [ship1, ship2]);
 var ship5 = new Ship([], [ship2, ship4, ship3]);
-//console.log(maude.getName() + ' ID: ' + maude.getVsn());
-//console.log(ship4.getCrew());
+console.log(ship4.getCrew());
 console.log(ship4.getDaughters());
 console.log(ship4.getSerialNumber());
 console.log(ship4.hasWaldo());
 console.log(ship4.totalWaldos());
+console.log("Removing Waldos from Ship 4...");
+ship4.removeWaldos();
+console.log(ship4.hasWaldo());
+console.log(ship4.getCrew());
+console.log(ship4.fleetHasDuplicates());
