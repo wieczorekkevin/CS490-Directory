@@ -86,6 +86,48 @@ class Ship {
         return count;
     }
 
+    removeWaldos() {
+        for (let i = 0; i < this.crew.length; i++) {
+            if (this.crew[i].getName() == "Waldo") {
+                //Remove Waldo!
+                this.crew.splice(i, 1);
+            }
+        }
+    }
+
+    removeDeepWaldos() {
+        //First call removeWaldos to get rid of the Waldos in the current ship
+        this.removeWaldos();
+
+        //Iterate over the daughter ships, and get rid of those Waldos
+        for (let j = 0; j < this.daughters.length; j++) {
+            for (let k = 0; k < this.daughters[j].crew.length; k++) {
+                this.daughters[j].removeWaldos();
+            }
+        }
+    }
+
+    fleetHasDuplicates() {
+        let arrayID: Array<number>;
+        arrayID = [];
+
+        //Check first ship of the fleet, store its ID into arrayID
+        arrayID.push(this.getSerialNumber());
+
+        //Iterate over the daughter ships, store new IDs into arrayID, return true once an ID is already in the array
+        for (let j = 0; j < this.daughters.length; j++) {
+            if (arrayID.indexOf(this.daughters[j].getSerialNumber()) > 0) {
+                return true;
+            }
+            else {
+                arrayID.push(this.daughters[j].getSerialNumber());
+            }
+        }
+
+        //If it exits the for loop, there were no duplicates!
+        return false;
+    }
+
 }
 
 console.log('Hello, World!');
@@ -106,9 +148,14 @@ const ship3 = new Ship([maude, harold], []);
 const ship4 = new Ship([harold, Waldo1], [ship1, ship2]);
 const ship5 = new Ship([], [ship2, ship4, ship3]);
 
-//console.log(maude.getName() + ' ID: ' + maude.getVsn());
-//console.log(ship4.getCrew());
+
+console.log(ship4.getCrew());
 console.log(ship4.getDaughters());
 console.log(ship4.getSerialNumber());
 console.log(ship4.hasWaldo());
 console.log(ship4.totalWaldos());
+console.log("Removing Waldos from Ship 4...")
+ship4.removeWaldos();
+console.log(ship4.hasWaldo());
+console.log(ship4.getCrew());
+console.log(ship4.fleetHasDuplicates());

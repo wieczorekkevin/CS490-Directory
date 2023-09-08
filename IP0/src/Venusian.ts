@@ -1,19 +1,22 @@
 export default class Venusian {
-    name: string;
-    VSN: number;
-    static uniqueIdentifier: number = 1;
+  name: string;
+
+  VSN: number;
+
+  static uniqueIdentifier = 1;
     
-    constructor(name:string) {
-        this.name = name;
-        this.VSN = Venusian.uniqueIdentifier++;
-    }
+  constructor(name:string) {
+    this.name = name;
+    Venusian.uniqueIdentifier += 1;
+    this.VSN = Venusian.uniqueIdentifier;
+  }
 
-    //Public Methods
-    getName() {
-        return this.name;
-    }
+  // Public Methods
+  getName() {
+    return this.name;
+  }
 
-    getVsn() {
-        return this.VSN;
-    }
+  getVsn() {
+    return this.VSN;
+  }
 } 
