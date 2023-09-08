@@ -60,11 +60,7 @@ export default class Ship {
 
     // Iterate over the daughter ships
     for (let j = 0; j < this.daughters.length; j += 1) {
-      for (let k = 0; k < this.daughters[j].crew.length; k += 1) {
-        if (this.daughters[j].crew[k].getName() === 'Waldo') {
-          count += 1;
-        }
-      }
+      count += this.daughters[j].totalWaldos();
     }
 
     return count;
@@ -85,9 +81,7 @@ export default class Ship {
 
     // Iterate over the daughter ships, and get rid of those Waldos
     for (let j = 0; j < this.daughters.length; j += 1) {
-      for (let k = 0; k < this.daughters[j].crew.length; k += 1) {
-        this.daughters[j].removeWaldos();
-      }
+      this.daughters[j].removeDeepWaldos();
     }
   }
 
@@ -101,6 +95,14 @@ export default class Ship {
     for (let j = 0; j < this.daughters.length; j += 1) {
       if (arrayID.indexOf(this.daughters[j].getSerialNumber()) > 0) {
         return true;
+      }
+
+      if (this.daughters[j].daughters.length > 0) {
+        for (let k = 0; k < this.daughters[j].daughters.length; k += 1) {
+          if (arrayID.indexOf(this.daughters[j].daughters[k].getSerialNumber()) > 0) {
+            return true;
+          }
+        }
       }
             
       arrayID.push(this.daughters[j].getSerialNumber());
