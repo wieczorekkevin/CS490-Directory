@@ -159,3 +159,6 @@ ship4.removeWaldos();
 console.log(ship4.hasWaldo());
 console.log(ship4.getCrew());
 console.log(ship4.fleetHasDuplicates());
+
+
+//Testing changes from laptop
