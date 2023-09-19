@@ -1,9 +1,11 @@
 import { createPlayerForTesting } from '../../TestUtils';
 import {
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
   GAME_FULL_MESSAGE,
   GAME_NOT_IN_PROGRESS_MESSAGE,
   MOVE_NOT_YOUR_TURN_MESSAGE,
   PLAYER_ALREADY_IN_GAME_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import { TicTacToeMove } from '../../types/CoveyTownSocket';
@@ -97,8 +99,7 @@ describe('TicTacToeGame', () => {
       it('when the same player tries to join the game', () => {
         const player1 = createPlayerForTesting();
         game.join(player1);
-        expect(() =>
-        game.join(player1)).toThrowError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+        expect(() => game.join(player1)).toThrowError(PLAYER_ALREADY_IN_GAME_MESSAGE);
       });
     });
   });
@@ -111,8 +112,7 @@ describe('TicTacToeGame', () => {
         const player3 = createPlayerForTesting();
         game.join(player1);
         game.join(player2);
-        expect(() =>
-        game.join(player3)).toThrowError(GAME_FULL_MESSAGE);
+        expect(() => game.join(player3)).toThrowError(GAME_FULL_MESSAGE);
       });
     });
   });
@@ -137,6 +137,17 @@ describe('TicTacToeGame', () => {
           expect(game.state.x).toEqual(player1.id);
           expect(game.state.o).toEqual(player2.id);
         });
+      });
+    });
+  });
+
+  describe('[T1.2b] _leave', () => {
+    describe('throw an error', () => {
+      it('when a player tries to leave a game they are not in', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        game.join(player1);
+        expect(() => game.leave(player2)).toThrowError(PLAYER_NOT_IN_GAME_MESSAGE);
       });
     });
   });
@@ -180,6 +191,41 @@ describe('TicTacToeGame', () => {
             move,
           }),
         ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
+      });
+    });
+  });
+
+  describe('applyMove', () => {
+    describe('when given an invalid move', () => {
+      let player1: Player;
+      let player2: Player;
+      beforeEach(() => {
+        player1 = createPlayerForTesting();
+        player2 = createPlayerForTesting();
+        game.join(player1);
+        game.join(player2);
+      });
+      it('[T2.1c] should throw InvalidParamatersError with message: BOARD_POSITION_NOT_EMPTY_MESSAGE ', () => {
+        let move: TicTacToeMove = { row: 1, col: 2, gamePiece: 'X' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player1.id,
+          move,
+        });
+        move = {row: 2, col: 2, gamePiece: 'O'};
+        game.applyMove({
+          gameID: game.id,
+          playerID: player2.id,
+          move,
+        });
+        move = {row: 2, col: 2, gamePiece: 'X'};
+        expect(() =>
+          game.applyMove({
+            gameID: game.id,
+            playerID: player1.id,
+            move,
+          }),
+        ).toThrowError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
       });
     });
   });

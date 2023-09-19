@@ -4,6 +4,7 @@ import InvalidParametersError, {
   PLAYER_ALREADY_IN_GAME_MESSAGE,
   GAME_FULL_MESSAGE,
   PLAYER_NOT_IN_GAME_MESSAGE,
+  BOARD_POSITION_NOT_EMPTY_MESSAGE,
 } from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import { GameMove, PlayerID, TicTacToeGameState, TicTacToeMove } from '../../types/CoveyTownSocket';
@@ -55,6 +56,23 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
     } else if (move.playerID !== expectedPlayerID) {
       throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
     }
+
+    let newSetOfMoves: TicTacToeMove[] = [];
+    if (this.state.moves.length === 0) {
+      newSetOfMoves.push(move.move);
+    } else {
+      for (let i = 0; i < this.state.moves.length; i += 1) {
+        if ((move.move.col === this.state.moves[i].col) && (move.move.row === this.state.moves[i].row)) {
+          throw new InvalidParametersError(BOARD_POSITION_NOT_EMPTY_MESSAGE);
+        }
+        else {
+          newSetOfMoves.push(this.state.moves[i]);
+        }
+      }
+      newSetOfMoves.push(move.move);
+      
+    }
+    this.state.moves = newSetOfMoves;
   }
 
   /**
@@ -100,16 +118,16 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
   protected _leave(player: Player): void {
     const index = this._players.indexOf(player);
 
-    if ((this.state.x !== player.id) && (this.state.o !== player.id)) {
+    if (this.state.x !== player.id && this.state.o !== player.id) {
       throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
     } else if (this.state.status === 'IN_PROGRESS') {
-        if (this.state.x === player.id) {
-          this.state.winner = this.state.o;
-        } else if (this.state.o === player.id) {
-          this.state.winner = this.state.x;
-        }
-        this._players.splice(index, 1);
-        this.state.status = 'OVER';
+      if (this.state.x === player.id) {
+        this.state.winner = this.state.o;
+      } else if (this.state.o === player.id) {
+        this.state.winner = this.state.x;
+      }
+      this._players.splice(index, 1);
+      this.state.status = 'OVER';
     } else {
       this._players.splice(index, 1);
       this.state.status = 'WAITING_TO_START';
