@@ -1,4 +1,10 @@
 import { createPlayerForTesting } from '../../TestUtils';
+import {
+  GAME_FULL_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
 import { TicTacToeMove } from '../../types/CoveyTownSocket';
 import TicTacToeGame from './TicTacToeGame';
@@ -86,6 +92,31 @@ describe('TicTacToeGame', () => {
     });
   });
 
+  describe('[T1.1b] _join', () => {
+    describe('Throw an error', () => {
+      it('when the same player tries to join the game', () => {
+        const player1 = createPlayerForTesting();
+        game.join(player1);
+        expect(() =>
+        game.join(player1)).toThrowError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+      });
+    });
+  });
+
+  describe('[T1.1c] _join', () => {
+    describe('Throw an error', () => {
+      it('when the game is already full', () => {
+        const player1 = createPlayerForTesting();
+        const player2 = createPlayerForTesting();
+        const player3 = createPlayerForTesting();
+        game.join(player1);
+        game.join(player2);
+        expect(() =>
+        game.join(player3)).toThrowError(GAME_FULL_MESSAGE);
+      });
+    });
+  });
+
   describe('[T1.2a] _leave', () => {
     describe('when the player is in the game', () => {
       describe('when the game is in progress, it should set the game status to OVER and declare the other player the winner', () => {
@@ -106,6 +137,49 @@ describe('TicTacToeGame', () => {
           expect(game.state.x).toEqual(player1.id);
           expect(game.state.o).toEqual(player2.id);
         });
+      });
+    });
+  });
+
+  describe('applyMove', () => {
+    describe('when given an invalid move', () => {
+      let player1: Player;
+      let player2: Player;
+      beforeEach(() => {
+        player1 = createPlayerForTesting();
+        player2 = createPlayerForTesting();
+        game.join(player1);
+        game.join(player2);
+      });
+      it('[T2.1a] should throw InvalidParamatersError with message: MOVE_NOT_YOUR_TURN_MESSAGE ', () => {
+        const move: TicTacToeMove = { row: 1, col: 2, gamePiece: 'X' };
+        expect(() =>
+          game.applyMove({
+            gameID: game.id,
+            playerID: player2.id,
+            move,
+          }),
+        ).toThrowError(MOVE_NOT_YOUR_TURN_MESSAGE);
+      });
+    });
+  });
+
+  describe('applyMove', () => {
+    describe('when given an invalid move', () => {
+      let player1: Player;
+      beforeEach(() => {
+        player1 = createPlayerForTesting();
+        game.join(player1);
+      });
+      it('[T2.1b] should throw InvalidParamatersError with message: GAME_NOT_IN_PROGRESS_MESSAGE ', () => {
+        const move: TicTacToeMove = { row: 1, col: 2, gamePiece: 'X' };
+        expect(() =>
+          game.applyMove({
+            gameID: game.id,
+            playerID: player1.id,
+            move,
+          }),
+        ).toThrowError(GAME_NOT_IN_PROGRESS_MESSAGE);
       });
     });
   });

@@ -1,5 +1,12 @@
+import InvalidParametersError, {
+  MOVE_NOT_YOUR_TURN_MESSAGE,
+  GAME_NOT_IN_PROGRESS_MESSAGE,
+  PLAYER_ALREADY_IN_GAME_MESSAGE,
+  GAME_FULL_MESSAGE,
+  PLAYER_NOT_IN_GAME_MESSAGE,
+} from '../../lib/InvalidParametersError';
 import Player from '../../lib/Player';
-import { GameMove, TicTacToeGameState, TicTacToeMove } from '../../types/CoveyTownSocket';
+import { GameMove, PlayerID, TicTacToeGameState, TicTacToeMove } from '../../types/CoveyTownSocket';
 import Game from './Game';
 
 /**
@@ -34,7 +41,21 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
    * @param move The move to apply to the game
    * @throws InvalidParametersError if the move is invalid (with specific message noted above)
    */
-  public applyMove(move: GameMove<TicTacToeMove>): void {}
+  public applyMove(move: GameMove<TicTacToeMove>): void {
+    let expectedPlayerID: PlayerID | undefined;
+
+    if (move.move.gamePiece === 'X') {
+      expectedPlayerID = this.state.x;
+    } else if (move.move.gamePiece === 'O') {
+      expectedPlayerID = this.state.o;
+    }
+
+    if (this.state.status !== 'IN_PROGRESS') {
+      throw new InvalidParametersError(GAME_NOT_IN_PROGRESS_MESSAGE);
+    } else if (move.playerID !== expectedPlayerID) {
+      throw new InvalidParametersError(MOVE_NOT_YOUR_TURN_MESSAGE);
+    }
+  }
 
   /**
    * Adds a player to the game.
@@ -46,14 +67,23 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
    *  or the game is full (GAME_FULL_MESSAGE)
    */
   public _join(player: Player): void {
-    if (this.state.x) {
-      this.state.o = player.id;
-      this.state.status = 'IN_PROGRESS';
+    if (player.id === this.state.x || player.id === this.state.o) {
+      throw new InvalidParametersError(PLAYER_ALREADY_IN_GAME_MESSAGE);
+    } else if (this.state.x !== undefined && this.state.o !== undefined) {
+      throw new InvalidParametersError(GAME_FULL_MESSAGE);
     } else {
-      this.state.x = player.id;
-      this.state.status = 'WAITING_TO_START';
+      if (this.state.x === undefined) {
+        this.state.x = player.id;
+      } else if (this.state.o === undefined) {
+        this.state.o = player.id;
+      }
+      this._players.push(player);
+      if (this.state.x !== undefined && this.state.o !== undefined) {
+        this.state.status = 'IN_PROGRESS';
+      } else {
+        this.state.status = 'WAITING_TO_START';
+      }
     }
-    this._players.push(player);
   }
 
   /**
@@ -68,20 +98,21 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
    * @throws InvalidParametersError if the player is not in the game (PLAYER_NOT_IN_GAME_MESSAGE)
    */
   protected _leave(player: Player): void {
-    if (this.state.x) {
-      if (this.state.status === 'IN_PROGRESS') {
+    const index = this._players.indexOf(player);
+
+    if ((this.state.x !== player.id) && (this.state.o !== player.id)) {
+      throw new InvalidParametersError(PLAYER_NOT_IN_GAME_MESSAGE);
+    } else if (this.state.status === 'IN_PROGRESS') {
+        if (this.state.x === player.id) {
+          this.state.winner = this.state.o;
+        } else if (this.state.o === player.id) {
+          this.state.winner = this.state.x;
+        }
+        this._players.splice(index, 1);
         this.state.status = 'OVER';
-        this.state.winner = this.state.o;
-      } else {
-        this.state.status = 'WAITING_TO_START';
-      }
-    } else if (this.state.o) {
-      if (this.state.status === 'IN_PROGRESS') {
-        this.state.status = 'OVER';
-        this.state.winner = this.state.x;
-      } else {
-        this.state.status = 'WAITING_TO_START';
-      }
+    } else {
+      this._players.splice(index, 1);
+      this.state.status = 'WAITING_TO_START';
     }
   }
 }
