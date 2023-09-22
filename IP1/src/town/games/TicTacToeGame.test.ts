@@ -212,13 +212,13 @@ describe('TicTacToeGame', () => {
           playerID: player1.id,
           move,
         });
-        move = {row: 2, col: 2, gamePiece: 'O'};
+        move = { row: 2, col: 2, gamePiece: 'O' };
         game.applyMove({
           gameID: game.id,
           playerID: player2.id,
           move,
         });
-        move = {row: 2, col: 2, gamePiece: 'X'};
+        move = { row: 2, col: 2, gamePiece: 'X' };
         expect(() =>
           game.applyMove({
             gameID: game.id,
