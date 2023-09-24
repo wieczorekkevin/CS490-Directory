@@ -229,4 +229,52 @@ describe('TicTacToeGame', () => {
       });
     });
   });
+
+  describe('applyMove', () => {
+    describe('when given a valid move', () => {
+      let player1: Player;
+      let player2: Player;
+      beforeEach(() => {
+        player1 = createPlayerForTesting();
+        player2 = createPlayerForTesting();
+        game.join(player1);
+        game.join(player2);
+      });
+      it('[T2.2] determine a winner if a winner is found', () => {
+        let move: TicTacToeMove = { row: 0, col: 0, gamePiece: 'X' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player1.id,
+          move,
+        });
+        move = { row: 1, col: 0, gamePiece: 'O' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player2.id,
+          move,
+        });
+        move = { row: 0, col: 1, gamePiece: 'X' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player1.id,
+          move,
+        });
+        move = { row: 1, col: 1, gamePiece: 'O' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player2.id,
+          move,
+        });
+        move = { row: 0, col: 2, gamePiece: 'X' };
+        game.applyMove({
+          gameID: game.id,
+          playerID: player1.id,
+          move,
+        });
+        expect(game.state.moves).toHaveLength(5);
+        expect(game.state.status).toEqual('OVER');
+        expect(game.state.winner).toEqual(player1.id);
+      });
+    });
+  });
 });

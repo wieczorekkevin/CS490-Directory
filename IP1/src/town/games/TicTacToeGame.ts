@@ -14,12 +14,75 @@ import Game from './Game';
  * A TicTacToeGame is a Game that implements the rules of Tic Tac Toe.
  * @see https://en.wikipedia.org/wiki/Tic-tac-toe
  */
+
 export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMove> {
   public constructor() {
     super({
       moves: [],
       status: 'WAITING_TO_START',
     });
+  }
+
+  /*
+   * Checks a player's validated move to see if the game results in a win or tie.
+   * This function is only called when the minimum amount of turns where a win can happen occurs (5 turns).
+   * Creates a 2D array of strings that serves as the TicTacToe board, where each possible win is checked.
+   * If a win is found, set the game status to OVER and sets winner to the player ID of the most recent move.
+   * Otherwise, checks if all 9 moves have been taken to indicate a tie, sets the game status to OVER and sets winner to undefined.
+   *
+   * @param move Move that is checked along win condition.
+   */
+  checkGameEndCondition(move: GameMove<TicTacToeMove>): void {
+    const maxMoveCount = 9;
+
+    const rowMax = 3;
+    const colMax = 3;
+    let rowIndex: number;
+    let colIndex: number;
+    const mapTicTacToe: string[][] = [];
+
+    for (let p = 0; p < rowMax; p++) {
+      mapTicTacToe[p] = [];
+      for (let q = 0; q < colMax; q++) {
+        mapTicTacToe[p][q] = '';
+      }
+    }
+
+    for (let i = 0; i < this.state.moves.length; i++) {
+      rowIndex = this.state.moves[i].row;
+      colIndex = this.state.moves[i].col;
+      mapTicTacToe[rowIndex][colIndex] = this.state.moves[i].gamePiece;
+    }
+
+    for (let j = 0; j < rowMax; j++) {
+      if (mapTicTacToe[j][0] === mapTicTacToe[j][1] && mapTicTacToe[j][0] === mapTicTacToe[j][2]) {
+        this.state.status = 'OVER';
+        this.state.winner = move.playerID;
+        return;
+      }
+    }
+
+    for (let k = 0; k < colMax; k++) {
+      if (mapTicTacToe[0][k] === mapTicTacToe[1][k] && mapTicTacToe[0][k] === mapTicTacToe[2][k]) {
+        this.state.status = 'OVER';
+        this.state.winner = move.playerID;
+        return;
+      }
+    }
+
+    if (
+      (mapTicTacToe[0][0] === mapTicTacToe[1][1] && mapTicTacToe[0][0] === mapTicTacToe[2][2]) ||
+      (mapTicTacToe[0][2] === mapTicTacToe[1][1] && mapTicTacToe[0][2] === mapTicTacToe[2][0])
+    ) {
+      this.state.status = 'OVER';
+      this.state.winner = move.playerID;
+      return;
+    }
+
+    if (this.state.moves.length === maxMoveCount) {
+      this.state.status = 'OVER';
+      this.state.winner = undefined;
+    }
   }
 
   /*
@@ -74,6 +137,10 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
       newSetOfMoves.push(move.move);
     }
     this.state.moves = newSetOfMoves;
+    const minimumTurnsToWin = 5;
+    if (this.state.moves.length >= minimumTurnsToWin) {
+      this.checkGameEndCondition(move);
+    }
   }
 
   /**
