@@ -125,8 +125,13 @@ export default class TicTacToeGame extends Game<TicTacToeGameState, TicTacToeMov
         this.state.winner = this.state.x;
       }
       this.state.status = 'OVER';
-    } else {
+    } else if (this.state.status === 'WAITING_TO_START') {
       this.state.status = 'WAITING_TO_START';
+      if (this.state.x === player.id) {
+        this.state.x = undefined;
+      } else if (this.state.o === player.id) {
+        this.state.o = undefined;
+      }
     }
   }
 }
